@@ -1,13 +1,23 @@
+/*
+
+Vehicle Recall Data Exploration Project.
+Skills Used: Window Functions, Aggregate Functions, CTEs, Converting Data Types, and CASE expressions.
+
+*/
+
+
+
+
 USE Project1
 select *
 from dbo.recall
 order by Report_Received_Date ASC
 
--- IS NHTSA_ID a unique ID
+--Is NHTSA_ID a unique ID?
 SELECT COUNT(DISTINCT NHTSA_ID), count(NHTSA_ID)
 FROM dbo.Recall
 
---convert report received date
+--Converting report received date
 ALTER TABLE  dbo.recall
 ADD report_received_date_converted DATE;
 
@@ -16,7 +26,7 @@ SET report_received_date_converted = CONVERT(DATE, report_received_date)
 
 
 
--- CHECK all the dates are there
+-- Check all the dates are there
 SELECT report_received_date, report_received_date_converted
 from dbo.Recall
 
@@ -26,7 +36,7 @@ SELECT YEAR(report_received_date_converted)
 FROM DBO.recall
 
 
---How many vehicle recalls from each manufacture have a 'do not drive advirosry' per year w/ aggregate fn
+--How many vehicle recalls from each manufacture have a 'do not drive advirosry' per year?
 SELECT do_not_drive_advisory AS do_not_drive,  
 	   manufacturer, 
 	   YEAR(report_received_date_converted) AS year_report_received, 
@@ -36,7 +46,7 @@ WHERE do_not_drive_advisory LIKE 'yes' AND recall_type = 'vehicle'
 GROUP BY  do_not_drive_advisory, manufacturer, YEAR(report_received_date_converted)
 ORDER BY manufacturer, year_report_received ASC
 
---Which car manufacturer has the highest number of vehicle recalls in the last 5 years (2017-2022)
+--Which car manufacturer has the highest number of vehicle recalls in the last 5 years (2017-2022)?
 
 WITH CTE AS (SELECT  *, ROW_NUMBER() OVER(PARTITION BY manufacturer, number_of_recalls ORDER BY manufacturer) AS number
 FROM (SELECT YEAR(report_received_date_converted) AS year_report_received, manufacturer, recall_type,
@@ -50,7 +60,7 @@ FROM CTE
 WHERE number=1
 ORDER BY number_of_recalls DESC
 
--- What is the top problem with cars from each manufacturer
+-- What is the top problem with cars from each manufacturer?
 WITH CTE AS (
 
 SELECT manufacturer, recall_type, component, COUNT(component) AS number_of_recalls, DENSE_RANK() OVER(PARTITION BY manufacturer order by COUNT(component) DESC) AS rank
@@ -65,7 +75,7 @@ WHERE recall_type LIKE 'vehicle'
  WHERE rank =1
  ORDER BY number_of_recalls DESC
 
- --number of recalls for each component across the years
+ --What are the number of recalls for each component across the years?
 
  SELECT manufacturer, recall_type, component,YEAR(report_received_date_converted) AS year, COUNT(component) AS number_of_recalls
  FROM dbo.Recall
@@ -73,7 +83,7 @@ WHERE recall_type LIKE 'vehicle'
  GROUP BY manufacturer, recall_type, component, YEAR(report_received_date_converted)
  ORDER BY Manufacturer, year, number_of_recalls DESC
 
- --what component has been recalled the most in the last 5 years
+ --What component has been recalled the most in the last 5 years across all manufacturers?
 SELECT component, COUNT(component) AS number_of_recalls
 FROM dbo.recall
 WHERE YEAR(report_received_date_converted) IN ('2017','2018','2019','2020','2021','2022') AND recall_type='vehicle'
@@ -81,7 +91,7 @@ GROUP BY component
 ORDER BY COUNT(component) DESC
 
 
- --which manufacturer has the highest number of vehicles affected by 'do not drive' advisory recalls in the last 5 years
+ --Which manufacturer has the highest number of vehicles affected by a 'do not drive' advisory recalls in the last 5 years?
 SELECT    
 	   manufacturer,  
 	   SUM(potentially_affected) AS affected_vehicles
@@ -91,7 +101,7 @@ GROUP BY  manufacturer
 ORDER BY affected_vehicles DESC
 
 
--- What percentage of each manufacturer's recalls have a do 'do not drive advisory' 
+-- What percentage of each manufacturer's recalls have a do 'do not drive advisory'?
 
 WITH CTE AS (
 SELECT manufacturer, 
