@@ -1,11 +1,5 @@
-/*
-
-Vehicle Recall Data Exploration Project.
-Skills Used: Window Functions, Aggregate Functions, CTEs, Converting Data Types, and CASE expressions.
-
-*/
-
-
+--Vehicle Recall Data Exploration Project.
+--Skills Used: Window Functions, Aggregate Functions, CTEs, Converting Data Types, and CASE expressions.
 
 
 USE Project1
